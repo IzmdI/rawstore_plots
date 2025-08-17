@@ -1,0 +1,14 @@
+name: plot
+on: push
+jobs:
+  plot:
+    steps:
+    - name: Create graph charts
+      uses: alexrogalskiy/github-action-charts@master
+      with:
+        url: 'https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/0.json'
+        name: 'chart'
+        path: 'images'
+        extension: 'svg'
+        width: 400
+        height: 400
