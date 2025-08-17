@@ -2,6 +2,7 @@ name: plot
 on: push
 jobs:
   plot:
+    runs-on: ubuntu-latest
     steps:
     - name: Create graph charts
       uses: alexrogalskiy/github-action-charts@master
