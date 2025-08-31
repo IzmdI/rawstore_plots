@@ -254,7 +254,7 @@ def main():
         '-i',
         '--input',
         type=Path,
-        default=Path("../assets/fio_summary.jsonl"),
+        default=Path("../frontend/assets/fio_summary.jsonl"),
         help='Path to input JSONL file with FIO results'
     )
     parser.add_argument(
