@@ -35,7 +35,7 @@ class FIODashboard {
 
     async loadData() {
         try {
-            const response = await fetch('data/fio_summary.jsonl');
+            const response = await fetch('assets/fio_summary.jsonl');
             if (!response.ok) throw new Error('File not found');
             
             const text = await response.text();
@@ -66,7 +66,7 @@ class FIODashboard {
 
         } catch (error) {
             console.error('Error loading data:', error);
-            this.showError('Ошибка загрузки данных. Проверьте файл data/fio_summary.jsonl');
+            this.showError('Ошибка загрузки данных. Проверьте файл assets/fio_summary.jsonl');
         }
     }
 
