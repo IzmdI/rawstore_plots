@@ -8,6 +8,20 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <script>
+    // Проверка доступности файла
+    fetch('data/fio_summary.jsonl')
+        .then(response => {
+            console.log('Data file status:', response.status);
+            return response.text();
+        })
+        .then(text => {
+            console.log('Data loaded, first line:', text.split('\n')[0]);
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+    </script>
     <div class="container">
         <header>
             <h1>📊 FIO Performance Dashboard</h1>
