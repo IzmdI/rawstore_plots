@@ -7,7 +7,7 @@ const CONFIG = {
         write_latency: "#ff7f0e"
     },
     margins: {
-        top: 50,
+        top: 60,
         right: 80,
         bottom: 100,
         left: 80
@@ -35,7 +35,7 @@ class FIODashboard {
 
     async loadData() {
         try {
-            const response = await fetch('assets/fio_summary.jsonl');
+            const response = await fetch('data/fio_summary.jsonl');
             if (!response.ok) throw new Error('File not found');
             
             const text = await response.text();
@@ -83,7 +83,7 @@ class FIODashboard {
         container.html('');
 
         const width = container.node().offsetWidth;
-        const height = 400;
+        const height = 500;
         const innerWidth = width - CONFIG.margins.left - CONFIG.margins.right;
         const innerHeight = height - CONFIG.margins.top - CONFIG.margins.bottom;
 
@@ -139,7 +139,7 @@ class FIODashboard {
             .attr('width', barWidth)
             .attr('height', d => innerHeight - yScale(d.read_iops))
             .attr('fill', CONFIG.colors.read_iops)
-            .on('mouseover', (event, d) => this.showTooltip(event, d, 'read_iops'))
+            .on('mouseover', (event, d) => this.showTooltip(event, d, 'read_iops', 'IOPS'))
             .on('mouseout', () => this.hideTooltip());
 
         // Write IOPS
@@ -153,7 +153,7 @@ class FIODashboard {
             .attr('width', barWidth)
             .attr('height', d => innerHeight - yScale(d.write_iops))
             .attr('fill', CONFIG.colors.write_iops)
-            .on('mouseover', (event, d) => this.showTooltip(event, d, 'write_iops'))
+            .on('mouseover', (event, d) => this.showTooltip(event, d, 'write_iops', 'IOPS'))
             .on('mouseout', () => this.hideTooltip());
 
         // Labels
@@ -163,15 +163,103 @@ class FIODashboard {
             .attr('x', 0 - (innerHeight / 2))
             .attr('dy', '1em')
             .style('text-anchor', 'middle')
-            .text('IOPS');
+            .text('IOPS')
+            .style('font-weight', 'bold');
 
         // Zoom behavior
         this.setupZoom(svg, g, xScale, yScale, innerWidth, innerHeight);
     }
 
     createLatencyChart() {
-        // Аналогично createIOPSChart, но для latency
-        // Полный код аналогичен, но с метриками latency
+        const container = d3.select('#latency-chart .chart-content');
+        container.html('');
+
+        const width = container.node().offsetWidth;
+        const height = 500;
+        const innerWidth = width - CONFIG.margins.left - CONFIG.margins.right;
+        const innerHeight = height - CONFIG.margins.top - CONFIG.margins.bottom;
+
+        const svg = container.append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', 'latency-svg');
+
+        const g = svg.append('g')
+            .attr('transform', `translate(${CONFIG.margins.left},${CONFIG.margins.top})`);
+
+        // Scales
+        const xScale = d3.scaleBand()
+            .domain(this.data.map(d => d.timeLabel))
+            .range([0, innerWidth])
+            .padding(0.3);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, d => Math.max(d.read_latency, d.write_latency)) * 1.1])
+            .range([innerHeight, 0]);
+
+        // Axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale).ticks(8);
+
+        g.append('g')
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(xAxis)
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)');
+
+        g.append('g').call(yAxis);
+
+        // Grid
+        g.append('g')
+            .attr('class', 'grid')
+            .call(d3.axisLeft(yScale).tickSize(-innerWidth).tickFormat(''));
+
+        // Bars
+        const barWidth = xScale.bandwidth() / 2;
+
+        // Read Latency
+        g.selectAll('.read-latency')
+            .data(this.data)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar read-latency')
+            .attr('x', d => xScale(d.timeLabel))
+            .attr('y', d => yScale(d.read_latency))
+            .attr('width', barWidth)
+            .attr('height', d => innerHeight - yScale(d.read_latency))
+            .attr('fill', CONFIG.colors.read_latency)
+            .on('mouseover', (event, d) => this.showTooltip(event, d, 'read_latency', 'ns'))
+            .on('mouseout', () => this.hideTooltip());
+
+        // Write Latency
+        g.selectAll('.write-latency')
+            .data(this.data)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar write-latency')
+            .attr('x', d => xScale(d.timeLabel) + barWidth)
+            .attr('y', d => yScale(d.write_latency))
+            .attr('width', barWidth)
+            .attr('height', d => innerHeight - yScale(d.write_latency))
+            .attr('fill', CONFIG.colors.write_latency)
+            .on('mouseover', (event, d) => this.showTooltip(event, d, 'write_latency', 'ns'))
+            .on('mouseout', () => this.hideTooltip());
+
+        // Labels
+        g.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 0 - CONFIG.margins.left)
+            .attr('x', 0 - (innerHeight / 2))
+            .attr('dy', '1em')
+            .style('text-anchor', 'middle')
+            .text('Latency (ns)')
+            .style('font-weight', 'bold');
+
+        // Zoom behavior
+        this.setupZoom(svg, g, xScale, yScale, innerWidth, innerHeight);
     }
 
     setupZoom(svg, g, xScale, yScale, width, height) {
@@ -200,14 +288,14 @@ class FIODashboard {
         });
     }
 
-    showTooltip(event, d, metric) {
+    showTooltip(event, d, metric, unit) {
         const tooltip = d3.select('#tooltip');
-        const value = metric.includes('iops') ? d[metric] : d[metric];
-        const label = metric.includes('iops') ? 'IOPS' : 'ns';
+        const value = d[metric];
+        const metricName = metric.replace('_', ' ');
 
         tooltip.html(`
             <h3>${d.timeLabel}</h3>
-            <p><strong>${metric.replace('_', ' ')}:</strong> ${value.toLocaleString()} ${label}</p>
+            <p><strong>${metricName}:</strong> ${value.toLocaleString()} ${unit}</p>
             <p><strong>Timestamp:</strong> ${d.timestamp}</p>
         `)
         .style('left', (event.pageX + 15) + 'px')
@@ -222,6 +310,9 @@ class FIODashboard {
     createLegends() {
         const iopsLegend = d3.select('#iops-legend');
         const latencyLegend = d3.select('#latency-legend');
+
+        iopsLegend.html('');
+        latencyLegend.html('');
 
         ['read_iops', 'write_iops'].forEach(metric => {
             iopsLegend.append('div')
@@ -257,7 +348,6 @@ class FIODashboard {
     }
 
     setupEventListeners() {
-        // Обновление при изменении размера окна
         window.addEventListener('resize', () => {
             this.createCharts();
         });
