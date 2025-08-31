@@ -29,7 +29,7 @@ def merge_fio_results(
     :param output_file: Name of output file with merged results.
     :return: None
     """
-    output_path = input_path / Path(output_file + ".jsonl")
+    output_path = Path(f"../assets/{output_file}/.jsonl")
     last_timestamp = -1
     if output_path.exists() and output_path.stat().st_size > 0:
         last_line = _read_last_line(output_path)
