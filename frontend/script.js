@@ -35,7 +35,7 @@ class FIODashboard {
 
     async loadData() {
         try {
-            const response = await fetch('../data/fio_summary.jsonl');
+            const response = await fetch('/rawstore_plots/data/fio_summary.jsonl');
             if (!response.ok) throw new Error('File not found');
             
             const text = await response.text();
