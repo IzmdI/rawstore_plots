@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIO Performance Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 FIO Performance Dashboard</h1>
+            <p>Интерактивная визуализация результатов тестов производительности</p>
+        </header>
+
+        <div class="controls">
+            <button id="zoom-in">➕ Увеличить</button>
+            <button id="zoom-out">➖ Уменьшить</button>
+            <button id="reset-zoom">🔄 Сбросить zoom</button>
+            <span class="data-info" id="data-info">Загрузка данных...</span>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart" id="iops-chart">
+                <div class="chart-header">
+                    <h2>IOPS Performance</h2>
+                    <div class="legend" id="iops-legend"></div>
+                </div>
+                <div class="chart-content"></div>
+            </div>
+
+            <div class="chart" id="latency-chart">
+                <div class="chart-header">
+                    <h2>Latency Performance</h2>
+                    <div class="legend" id="latency-legend"></div>
+                </div>
+                <div class="chart-content"></div>
+            </div>
+        </div>
+
+        <div class="summary" id="summary-chart">
+            <h2>Performance Summary</h2>
+            <div class="summary-content"></div>
+        </div>
+
+        <footer>
+            <p>Обновлено: <span id="last-update">—</span></p>
+        </footer>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
